@@ -2,7 +2,7 @@
   <div>
     <label
       >Category:
-      <select v-model="selectedCategory">
+      <select v-model="filters.categories">
         <option
           v-for="category in availableCategories"
           :key="category.id"
@@ -28,15 +28,14 @@
   </div>
 </template>
 <script>
-import { getPosts, getCategories } from "../api.js";
+import { getPosts, getCategories } from "../techcrunch";
+import { filterableMixin } from "../mixins/filterable";
 
 export default {
+  mixins: [filterableMixin],
   data() {
     return {
-      items: [],
       categories: [],
-      selectedCategory: null,
-      page: 1,
     };
   },
   computed: {
@@ -49,58 +48,16 @@ export default {
       this.categories = await getCategories();
     },
 
-    async loadPosts() {
+    async loadItems() {
       this.items = await getPosts({
         page: this.page,
-        filters: { categories: this.selectedCategory },
+        filters: this.filters,
       });
-    },
-
-    syncHash() {
-      const urlParams = new URLSearchParams(window.location.hash.substring(1));
-      const entries = Object.fromEntries(urlParams.entries());
-      if (entries.page) {
-        this.page = entries.page;
-      }
-      if (entries.category) {
-        this.selectedCategory = entries.category;
-      }
-    },
-
-    updateHash() {
-      const urlParams = new URLSearchParams();
-      if (this.page !== 1) {
-        urlParams.append("page", this.page);
-      }
-      if (this.selectedCategory !== "") {
-        urlParams.append("category", this.selectedCategory);
-      }
-
-      window.location.hash = urlParams.toString();
     },
   },
 
   created() {
-    window.addEventListener("hashchange", this.syncHash);
-    this.syncHash();
     this.loadCategories();
-    this.loadPosts();
-  },
-
-  beforeUnmount() {
-    window.removeEventListener("hashchange", this.syncHash);
-  },
-
-  watch: {
-    page() {
-      this.loadPosts();
-      this.updateHash();
-    },
-    selectedCategory() {
-      this.page = 1;
-      this.loadPosts();
-      this.updateHash();
-    },
   },
 };
 </script>

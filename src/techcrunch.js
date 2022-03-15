@@ -4,12 +4,11 @@ export function getPosts({ page = 1, filters = {} } = {}) {
     page,
     per_page: 10,
     ...filters,
-  }).forEach((key, value) => {
-    if (value !== null) {
+  }).forEach(([key, value]) => {
+    if (value != null) {
       url.searchParams.append(key, value);
     }
   });
-
   return fetch(url).then((r) => r.json());
 }
 
