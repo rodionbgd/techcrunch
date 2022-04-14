@@ -17,23 +17,23 @@
 </template>
 <script>
 import getPlanets from "../swapi";
-import { filterableMixin } from "../mixins/filterable";
+import useFilterable from "../use/filterable";
 
 export default {
-  mixins: [filterableMixin],
-  data() {
+  setup() {
+    const { page, filters, items, prevPage, nextPage } = useFilterable({
+      loadItems: getPlanets,
+      initialFilters: {
+        search: null,
+      },
+    });
     return {
-      items: [],
+      page,
+      filters,
+      items,
+      prevPage,
+      nextPage,
     };
-  },
-  methods: {
-    async loadItems() {
-      const { results } = await getPlanets({
-        page: this.page,
-        ...this.filters,
-      });
-      this.items = results;
-    },
   },
 };
 </script>

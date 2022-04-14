@@ -3,25 +3,21 @@
     <label
       >Category:
       <select v-model="filters.categories">
-        <option
-          v-for="category in availableCategories"
-          :key="category.id"
-          :value="category.id"
-        >
+        <option v-for="category in availableCategories" :value="category.id">
           {{ category.name }}
         </option>
       </select>
     </label>
     <hr />
     <div>
-      <button :disabled="page === 1" @click="page -= 1">Prev</button>
+      <button :disabled="page === 1" @click="prevPage">Prev</button>
       {{ page }}
-      <button @click="page++">Next</button>
+      <button @click="nextPage">Next</button>
     </div>
     <hr />
 
     <ul>
-      <li v-for="item in items" :key="item">
+      <li v-for="item in items">
         <a target="_blank" :href="item.link" v-html="item.title.rendered"></a>
       </li>
     </ul>
@@ -29,35 +25,36 @@
 </template>
 <script>
 import { getPosts, getCategories } from "../techcrunch";
-import { filterableMixin } from "../mixins/filterable";
+import useFilterable from "../use/filterable";
+import { computed, ref } from "vue";
 
 export default {
-  mixins: [filterableMixin],
-  data() {
-    return {
-      categories: [],
+  setup() {
+    const categories = ref([]);
+    const availableCategories = computed(() => [
+      { id: null, name: "(no category)" },
+      ...categories.value,
+    ]);
+    const loadCategories = async () => {
+      categories.value = await getCategories();
     };
-  },
-  computed: {
-    availableCategories() {
-      return [{ id: null, name: "(no category)" }, ...this.categories];
-    },
-  },
-  methods: {
-    async loadCategories() {
-      this.categories = await getCategories();
-    },
-
-    async loadItems() {
-      this.items = await getPosts({
-        page: this.page,
-        filters: this.filters,
-      });
-    },
-  },
-
-  created() {
-    this.loadCategories();
+    const { page, filters, items, prevPage, nextPage } = useFilterable({
+      loadItems: getPosts,
+      initialFilters: {
+        categories: null,
+      },
+    });
+    loadCategories();
+    return {
+      categories,
+      availableCategories,
+      loadCategories,
+      page,
+      filters,
+      items,
+      prevPage,
+      nextPage,
+    };
   },
 };
 </script>

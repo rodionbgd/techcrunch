@@ -2,7 +2,7 @@
   <div id="app">
     <select v-model="selectedTab">
       <option value="techcrunch">TechCrunch</option>
-      <option value="starwars">StarWars</option>
+<!--      <option value="starwars">StarWars</option>-->
     </select>
     <hr />
     <TechCrunch v-if="selectedTab === 'techcrunch'" />
